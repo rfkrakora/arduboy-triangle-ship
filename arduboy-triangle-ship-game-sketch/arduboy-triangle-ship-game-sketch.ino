@@ -1,0 +1,176 @@
+ /*
+Hello, World! example
+June 11, 2015
+Copyright (C) 2015 David Martinez
+All rights reserved.
+This code is the most basic barebones code for writing a program for Arduboy.
+
+This library is free software; you can redistribute it and/or
+modify it under the terms of the GNU Lesser General Public
+License as published by the Free Software Foundation; either
+version 2.1 of the License, or (at your option) any later version.
+*/
+
+/* 
+ *  Arduboy screen resolution: 128 x 64 pixels
+ *  
+ */
+
+#include <Arduboy2.h>
+
+// make an instance of arduboy used for many functions
+Arduboy2 arduboy;
+
+
+// This function runs once in your game.
+// use it for anything that needs to be set only once in your game.
+void setup() {
+  // initiate arduboy instance
+  arduboy.begin();
+
+  // here we set the framerate to 15, we do not need to run at
+  // default 60 and it saves us battery life
+  arduboy.setFrameRate(15);
+}
+
+int cursor_x = 4;
+int cursor_y = 9;
+int graphic_count = 0;
+int sprite_x = 10;
+int sprite_y = 20;
+
+const unsigned char player[] PROGMEM  = {
+    0xfe, 0x1, 0x3d, 0x25, 0x25, 0x3d, 0x1, 0x1, 0xc1, 0x1, 0x3d, 0x25, 0x25, 0x3d, 0x1, 0xfe, 0x7f, 0x80, 0x9c, 0xbc, 0xb0, 0xb0, 0xb2, 0xb2, 0xb3, 0xb0, 0xb0, 0xb0, 0xbc, 0x9c, 0x80, 0x7f,
+};
+
+const unsigned char background[] PROGMEM  = {
+    0x84, 0x20, 0x9, 0x00, 0x24, 0x00, 0x10, 0x80,
+};
+
+const unsigned char graphic[8][8] PROGMEM = { { 0xff, 0x81, 0x81, 0x81, 0x81, 0x81, 0x81, 0xff },
+                                              { 0x7e, 0x81, 0x81, 0x81, 0x81, 0x81, 0x81, 0x7e },
+                                              { 0x3c, 0x81, 0x81, 0x81, 0x81, 0x81, 0x81, 0x3c },
+                                              { 0x18, 0x81, 0x81, 0x81, 0x81, 0x81, 0x81, 0x18 },
+                                              { 0x18, 0x81, 0x81, 0x81, 0x81, 0x81, 0x81, 0x18 },
+                                              { 0x3c, 0x81, 0x81, 0x81, 0x81, 0x81, 0x81, 0x3c },
+                                              { 0x7e, 0x81, 0x81, 0x81, 0x81, 0x81, 0x81, 0x7e },
+                                              { 0xff, 0x81, 0x81, 0x81, 0x81, 0x81, 0x81, 0xff } };
+
+const unsigned char flaming_ball_graphic[8][8] PROGMEM = { { 0x00, 0x00, 0x00, 0x18, 0x18, 0x00, 0x00, 0x00 },
+                                                           { 0x00, 0x00, 0x00, 0x18, 0x18, 0x00, 0x00, 0x00 },
+                                                           { 0x00, 0x00, 0x00, 0x18, 0x18, 0x00, 0x00, 0x00 },
+                                                           { 0x00, 0x00, 0x00, 0x18, 0x18, 0x00, 0x00, 0x00 },
+                                                           { 0x00, 0x00, 0x00, 0x18, 0x18, 0x00, 0x00, 0x00 },
+                                                           { 0x00, 0x00, 0x00, 0x18, 0x18, 0x00, 0x00, 0x00 },
+                                                           { 0x00, 0x00, 0x00, 0x18, 0x18, 0x00, 0x00, 0x00 },
+                                                           { 0x00, 0x00, 0x00, 0x18, 0x18, 0x00, 0x00, 0x00 } };
+
+const unsigned char ship_vertical[8][8] PROGMEM = { { 0x00, 0x00, 0x80, 0xfc, 0xff, 0xc0, 0x00, 0x00 },
+                                           { 0x00, 0x00, 0x80, 0xfc, 0xff, 0xc0, 0x00, 0x00 },
+                                           { 0x00, 0x00, 0x80, 0xfc, 0xff, 0xc0, 0x00, 0x00 },
+                                           { 0x00, 0x00, 0x80, 0xfc, 0xff, 0xc0, 0x00, 0x00 },
+                                           { 0x00, 0x00, 0x80, 0xfc, 0xff, 0xc0, 0x00, 0x00 },
+                                           { 0x00, 0x00, 0x80, 0xfc, 0xff, 0xc0, 0x00, 0x00 },
+                                           { 0x00, 0x00, 0x80, 0xfc, 0xff, 0xc0, 0x00, 0x00 },
+                                           { 0x00, 0x00, 0x80, 0xfc, 0xff, 0xc0, 0x00, 0x00 } };
+
+const unsigned char ship[8][8] PROGMEM = { { 0x00, 0x00, 0x80, 0xfc, 0xff, 0xc0, 0x00, 0x00 },
+                                           { 0x00, 0x00, 0x80, 0xfc, 0xff, 0xc0, 0x00, 0x00 },
+                                           { 0x00, 0x00, 0x80, 0xfc, 0xff, 0xc0, 0x00, 0x00 },
+                                           { 0x00, 0x00, 0x80, 0xfc, 0xff, 0xc0, 0x00, 0x00 },
+                                           { 0x00, 0x00, 0x80, 0xfc, 0xff, 0xc0, 0x00, 0x00 },
+                                           { 0x00, 0x00, 0x80, 0xfc, 0xff, 0xc0, 0x00, 0x00 },
+                                           { 0x00, 0x00, 0x80, 0xfc, 0xff, 0xc0, 0x00, 0x00 },
+                                           { 0x00, 0x00, 0x80, 0xfc, 0xff, 0xc0, 0x00, 0x00 } };
+
+/* down left side first, then right side is last */
+const unsigned char ship2[8] PROGMEM = { 0x3c, 0x38, 0x18, 0x18, 0x18, 0x18, 0x10, 0x10 };
+
+/*const unsigned char graphic1[] PROGMEM = { 0x7e, 0x81, 0x81, 0x81, 0x81, 0x81, 0x81, 0x7e };
+const unsigned char graphic2[] PROGMEM = { 0x3c, 0x81, 0x81, 0x81, 0x81, 0x81, 0x81, 0x3c };
+const unsigned char graphic3[] PROGMEM = { 0x18, 0x81, 0x81, 0x81, 0x81, 0x81, 0x81, 0x18 };
+const unsigned char graphic4[] PROGMEM = { 0x18, 0x81, 0x81, 0x81, 0x81, 0x81, 0x81, 0x18 };
+const unsigned char graphic5[] PROGMEM = { 0x3c, 0x81, 0x81, 0x81, 0x81, 0x81, 0x81, 0x3c };
+const unsigned char graphic6[] PROGMEM = { 0x7e, 0x81, 0x81, 0x81, 0x81, 0x81, 0x81, 0x7e };
+const unsigned char graphic7[] PROGMEM = { 0xff, 0x81, 0x81, 0x81, 0x81, 0x81, 0x81, 0xff };*/
+
+/* bullet last 0=x,1=y,2=flag */
+unsigned char bullet[3];
+//const unsigned char bullet PROGMEM = 0x01;
+
+
+// our main game loop, this runs once every cycle/frame.
+// this is where our game logic goes.
+void loop() {
+  // pause render until it's time for the next frame
+  if (!(arduboy.nextFrame()))
+    return;
+
+  // first we clear our screen to black
+  arduboy.clear();
+
+  // we set our cursor 5 pixels to the right and 10 down from the top
+  // (positions start at 0, 0)
+  arduboy.setCursor(0, 0);
+
+  // then we print to screen what is in the Quotation marks ""
+  arduboy.print(F("Hello, world!"));
+  arduboy.setCursor(cursor_x, cursor_y);
+  arduboy.setCursor(0, 0);
+  if( arduboy.pressed(DOWN_BUTTON) )
+  {
+    //y increases down
+    sprite_y++;
+    graphic_count++;
+    arduboy.print(F("DOWN"));
+  }
+  if( arduboy.pressed(UP_BUTTON) )
+  {
+    // y decreases up
+    sprite_y--;
+    graphic_count++;
+    arduboy.print(F("UP"));
+  }
+  if( arduboy.pressed(LEFT_BUTTON) )
+  {
+    sprite_x--;
+    graphic_count++;
+    arduboy.print(F("LEFT"));
+  }
+  if( arduboy.pressed(RIGHT_BUTTON) )
+  {
+    sprite_x++;
+    graphic_count++;
+    arduboy.print(F("RIGHT"));
+  }
+  if( graphic_count > 7 )
+  {
+     graphic_count = 0;
+  }
+//  arduboy.drawBitmap(sprite_x,sprite_y, graphic[graphic_count], 8, 8, WHITE);
+  arduboy.drawBitmap(sprite_x,sprite_y, ship2, 8, 8, WHITE);
+  if( arduboy.pressed(A_BUTTON) )
+  {
+    arduboy.print(F("A"));
+    /* upper left of ship */
+    bullet[0] = sprite_x+8;
+    bullet[1] = sprite_y+4;
+    bullet[2] = 0xff;
+  }
+
+  if( bullet[2] )
+  {
+    arduboy.drawPixel(bullet[0],bullet[1], WHITE);
+    bullet[0]+=2;
+    /* stop bullet if it reaches the edge of the display */
+    if( bullet[0] > 128 )
+    {
+      bullet[2] = 0;
+    }
+  }
+
+   //arduboy.
+  
+  // then we finaly we tell the arduboy to display what we just wrote to the display
+  arduboy.display();
+}
